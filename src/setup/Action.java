@@ -81,7 +81,7 @@ public class Action {
         this.command = action.getCommand();
         this.handIdx = action.getHandIdx();
         this.cardAttacker = new Coordinates(action.getCardAttacker());
-        this.cardAttacked = new Coordinates(action.getCardAttacker());
+        this.cardAttacked = new Coordinates(action.getCardAttacked());
         this.affectedRow = action.getAffectedRow();
         this.playerIdx = action.getPlayerIdx();
         this.x = action.getX();

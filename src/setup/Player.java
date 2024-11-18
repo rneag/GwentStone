@@ -101,8 +101,51 @@ public class Player {
         if (!wasPlaced)
             return 1;
 
+        mana -= card.getMana();
         hand.remove(handIdx);
 
+        return 0;
+    }
+
+    public int attackCard(Card [][] board, int attackerX, int attackerY, int attackedX, int attackedY, int playerIdx) {
+        Card cardAttacker = board[attackerX][attackerY];
+        Card cardAttacked = board[attackedX][attackedY];
+        int enemyRow = 2;
+        boolean enemyHasTank = false;
+
+        if (playerIdx == 1) {
+            enemyRow = 0;
+        }
+
+        if ((attackedX != enemyRow && attackedX != (enemyRow + 1)) || cardAttacked == null)
+            return -2;
+
+        if (cardAttacker.hasAttacked())
+            return -1;
+
+        if (cardAttacker.isFrozen())
+            return 1;
+
+        for (int i = enemyRow; i < enemyRow + 2; i++)
+            for (int j = 0; j < 5; j++) {
+                if (board[i][j] != null && (board[i][j].isTank()))
+                    enemyHasTank = true;
+            }
+
+        if (enemyHasTank && !cardAttacked.isTank())
+            return 2;
+
+        cardAttacker.setAttacked(true);
+        cardAttacked.reduceHealth(cardAttacker.getAttackDamage());
+
+        if (cardAttacked.getHealth() <= 0) {
+            board[attackedX][attackedY] = null;
+
+            for (int j = attackedY; j < 4; j++)
+                board[attackedX][j] = board[attackedX][j + 1];
+
+            board[attackedX][4] = null;
+        }
         return 0;
     }
 }

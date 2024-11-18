@@ -99,9 +99,17 @@ public class Card {
         this.name = card.name;
     }
 
-    boolean isHero() {
+    public boolean isTank() {
+        return name.equals("Goliath") || name.equals("Warden");
+    }
+
+    public boolean isHero() {
         return name.equals("Lord Royce") || name.equals("Empress Thorina")
                 || name.equals("King Mudface") || name.equals("General Koncioraw");
+    }
+
+    public void reduceHealth(int value) {
+        health -= value;
     }
 
     public ObjectNode convertToJSON() {

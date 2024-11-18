@@ -180,14 +180,14 @@ public class Match {
                 break;
 
             case "placeCard":
-                int ret;
+                int placeCardReturn;
 
                 if (activePlayer == 1)
-                    ret = player1.playCard(board, action.getHandIdx(), 1);
+                    placeCardReturn = player1.playCard(board, action.getHandIdx(), 1);
                 else
-                    ret = player2.playCard(board, action.getHandIdx(), 2);
+                    placeCardReturn = player2.playCard(board, action.getHandIdx(), 2);
 
-                switch (ret) {
+                switch (placeCardReturn) {
                     case -1:
                         objectNode.put("command", action.getCommand());
                         objectNode.put("handIdx", action.getHandIdx());
@@ -199,6 +199,56 @@ public class Match {
                         objectNode.put("command", action.getCommand());
                         objectNode.put("handIdx", action.getHandIdx());
                         objectNode.put("error", "Cannot place card on table since row is full.");
+                        output.add(objectNode);
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+
+            case "cardUsesAttack":
+                int attackReturn;
+
+                if (activePlayer == 1)
+                    attackReturn = player1.attackCard(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                                            action.getCardAttacked().getX(), action.getCardAttacked().getY(), 1);
+                else
+                    attackReturn = player2.attackCard(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                            action.getCardAttacked().getX(), action.getCardAttacked().getY(), 2);
+
+                if (attackReturn != 0) {
+                    objectNode.put("command", action.getCommand());
+                    ObjectNode attackerNode = mapper.createObjectNode();
+                    ObjectNode attackedNode = mapper.createObjectNode();
+
+                    attackerNode.put("x", action.getCardAttacker().getX());
+                    attackerNode.put("y", action.getCardAttacker().getY());
+                    objectNode.put("cardAttacker", attackerNode);
+
+                    attackedNode.put("x", action.getCardAttacked().getX());
+                    attackedNode.put("y", action.getCardAttacked().getY());
+                    objectNode.put("cardAttacked", attackedNode);
+                }
+
+                switch (attackReturn) {
+                    case -2:
+                        objectNode.put("error", "Attacked card does not belong to the enemy.");
+                        output.add(objectNode);
+                        break;
+
+                    case -1:
+                        objectNode.put("error", "Attacker card has already attacked this turn.");
+                        output.add(objectNode);
+                        break;
+
+                    case 1:
+                        objectNode.put("error", "Attacker card is frozen.");
+                        output.add(objectNode);
+                        break;
+
+                    case 2:
+                        objectNode.put("error", "Attacked card is not of type 'Tank’.");
                         output.add(objectNode);
                         break;
 
@@ -228,8 +278,10 @@ public class Match {
 
         for (int i = startRow; i < endRow; i++)
             for (int j = 0; j < 5; j++)
-                if (board[i][j] != null && board[i][j].isFrozen())
+                if (board[i][j] != null) {
                     board[i][j].setFrozen(false);
+                    board[i][j].setAttacked(false);
+                }
 
         activePlayer = activePlayer % 2 + 1;
         if (activePlayer == information.getStartingPlayer())
@@ -254,11 +306,15 @@ public class Match {
 
     ArrayNode getCardsOnTable() {
         ArrayNode arrayNode = mapper.createArrayNode();
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++) {
+            ArrayNode arrayNodeRow = mapper.createArrayNode();
+
             for (int j = 0; j < 5; j++)
                 if (board[i][j] != null)
-                    arrayNode.add((board[i][j]).convertToJSON());
+                    arrayNodeRow.add((board[i][j]).convertToJSON());
 
+            arrayNode.add(arrayNodeRow);
+        }
         return arrayNode;
     }
 
