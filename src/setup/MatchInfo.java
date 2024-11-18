@@ -3,7 +3,7 @@ package setup;
 import fileio.StartGameInput;
 import resources.Card;
 
-public class MatchInfo {
+public final class MatchInfo {
     private int playerOneDeckIdx;
     private int playerTwoDeckIdx;
     private int shuffleSeed;
@@ -15,7 +15,7 @@ public class MatchInfo {
         return playerOneDeckIdx;
     }
 
-    public void setPlayerOneDeckIdx(int playerOneDeckIdx) {
+    public void setPlayerOneDeckIdx(final int playerOneDeckIdx) {
         this.playerOneDeckIdx = playerOneDeckIdx;
     }
 
@@ -23,7 +23,7 @@ public class MatchInfo {
         return playerTwoDeckIdx;
     }
 
-    public void setPlayerTwoDeckIdx(int playerTwoDeckIdx) {
+    public void setPlayerTwoDeckIdx(final int playerTwoDeckIdx) {
         this.playerTwoDeckIdx = playerTwoDeckIdx;
     }
 
@@ -31,7 +31,7 @@ public class MatchInfo {
         return shuffleSeed;
     }
 
-    public void setShuffleSeed(int shuffleSeed) {
+    public void setShuffleSeed(final int shuffleSeed) {
         this.shuffleSeed = shuffleSeed;
     }
 
@@ -39,7 +39,7 @@ public class MatchInfo {
         return playerOneHero;
     }
 
-    public void setPlayerOneHero(Card playerOneHero) {
+    public void setPlayerOneHero(final Card playerOneHero) {
         this.playerOneHero = playerOneHero;
     }
 
@@ -47,7 +47,7 @@ public class MatchInfo {
         return playerTwoHero;
     }
 
-    public void setPlayerTwoHero(Card playerTwoHero) {
+    public void setPlayerTwoHero(final Card playerTwoHero) {
         this.playerTwoHero = playerTwoHero;
     }
 
@@ -55,30 +55,18 @@ public class MatchInfo {
         return startingPlayer;
     }
 
-    public void setStartingPlayer(int startingPlayer) {
+    public void setStartingPlayer(final int startingPlayer) {
         this.startingPlayer = startingPlayer;
     }
 
-    public MatchInfo(StartGameInput info) {
+    public MatchInfo(final StartGameInput info) {
         playerOneDeckIdx = info.getPlayerOneDeckIdx();
         playerTwoDeckIdx = info.getPlayerTwoDeckIdx();
         shuffleSeed = info.getShuffleSeed();
         playerOneHero = new Card(info.getPlayerOneHero());
-        playerOneHero.setHealth(30);
+        playerOneHero.setHealth(Game.HERO_HEALTH);
         playerTwoHero = new Card(info.getPlayerTwoHero());
-        playerTwoHero.setHealth(30);
+        playerTwoHero.setHealth(Game.HERO_HEALTH);
         startingPlayer = info.getStartingPlayer();
-    }
-
-    @Override
-    public String toString() {
-        return "MatchInfo{" +
-                "playerOneDeckIdx=" + playerOneDeckIdx +
-                ", playerTwoDeckIdx=" + playerTwoDeckIdx +
-                ", shuffleSeed=" + shuffleSeed +
-                ", playerOneHero=" + playerOneHero +
-                ", playerTwoHero=" + playerTwoHero +
-                ", startingPlayer=" + startingPlayer +
-                '}';
     }
 }

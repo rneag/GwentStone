@@ -7,20 +7,31 @@ import resources.Decks;
 
 import java.util.ArrayList;
 
-public class Game {
+public final class Game {
     private Decks playerOneDecks;
     private Decks playerTwoDecks;
     private ArrayList<Match> matches;
+    private static int playerOneWins;
+    private static int playerTwoWins;
 
+    public static final int HERO_HEALTH = 30;
     public static final int MAX_MANA = 10;
-    public static int playerOneWins;
-    public static int playerTwoWins;
+    public static final int BOARD_ROWS = 4;
+    public static final int BOARD_COLUMNS = 5;
+    public static final int ENEMY_HAS_TAUNT = -3;
+    public static final int NOT_ENEMY = -2;
+    public static final int ALREADY_ATTACKED = -1;
+    public static final int IS_FROZEN = 1;
+    public static final int NOT_ALLY = 2;
+    public static final int OUT_OF_MANA = 3;
+    public static final int NO_ROOM = 4;
+    public static final int HERO_ABILITY = 2;
 
     public Decks getPlayerOneDecks() {
         return playerOneDecks;
     }
 
-    public void setPlayerOneDecks(Decks playerOneDecks) {
+    public void setPlayerOneDecks(final Decks playerOneDecks) {
         this.playerOneDecks = playerOneDecks;
     }
 
@@ -28,7 +39,7 @@ public class Game {
         return playerTwoDecks;
     }
 
-    public void setPlayerTwoDecks(Decks playerTwoDecks) {
+    public void setPlayerTwoDecks(final Decks playerTwoDecks) {
         this.playerTwoDecks = playerTwoDecks;
     }
 
@@ -36,11 +47,42 @@ public class Game {
         return matches;
     }
 
-    public void setMatches(ArrayList<Match> matches) {
+    public void setMatches(final ArrayList<Match> matches) {
         this.matches = matches;
     }
 
-    public Game(DecksInput playerOneDecks, DecksInput playerTwoDecks, ArrayList<GameInput> games, ArrayNode output) {
+    public static int getPlayerOneWins() {
+        return playerOneWins;
+    }
+
+    public void setPlayerOneWins(final int playerOneWins) {
+        Game.playerOneWins = playerOneWins;
+    }
+
+    public static int getPlayerTwoWins() {
+        return playerTwoWins;
+    }
+
+    public void setPlayerTwoWins(final int playerTwoWins) {
+        Game.playerTwoWins = playerTwoWins;
+    }
+
+    /**
+     * Increments the number of games won by player one.
+     */
+    public static void incrementPlayerOneWins() {
+        playerOneWins++;
+    }
+
+    /**
+     * Increments the number of games won by player two.
+     */
+    public static void incrementPlayerTwoWins() {
+        playerTwoWins++;
+    }
+
+    public Game(final DecksInput playerOneDecks, final DecksInput playerTwoDecks,
+                final ArrayList<GameInput> games, final ArrayNode output) {
         this.playerOneDecks = new Decks(playerOneDecks.getNrCardsInDeck(),
                 playerOneDecks.getNrDecks(), playerOneDecks.getDecks());
         this.playerTwoDecks = new Decks(playerTwoDecks.getNrCardsInDeck(),
@@ -51,6 +93,7 @@ public class Game {
             this.matches.add(new Match(game, this.playerOneDecks, this.playerTwoDecks, output));
         }
 
-        Game.playerOneWins = Game.playerTwoWins = 0;
+        playerOneWins = 0;
+        playerTwoWins = 0;
     }
 }

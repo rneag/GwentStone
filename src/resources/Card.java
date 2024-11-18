@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.CardInput;
+import setup.Game;
 
 import java.util.ArrayList;
 
-public class Card {
+public final class Card {
     private int mana;
     private int attackDamage;
     private int health;
@@ -21,7 +22,7 @@ public class Card {
         return mana;
     }
 
-    public void setMana(int mana) {
+    public void setMana(final int mana) {
         this.mana = mana;
     }
 
@@ -29,7 +30,7 @@ public class Card {
         return attackDamage;
     }
 
-    public void setAttackDamage(int attackDamage) {
+    public void setAttackDamage(final int attackDamage) {
         this.attackDamage = attackDamage;
     }
 
@@ -37,7 +38,7 @@ public class Card {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(final int health) {
         this.health = health;
     }
 
@@ -45,7 +46,7 @@ public class Card {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -53,7 +54,7 @@ public class Card {
         return colors;
     }
 
-    public void setColors(ArrayList<String> colors) {
+    public void setColors(final ArrayList<String> colors) {
         this.colors = colors;
     }
 
@@ -61,7 +62,7 @@ public class Card {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -69,19 +70,23 @@ public class Card {
         return isFrozen;
     }
 
-    public void setFrozen(boolean frozen) {
+    public void setFrozen(final boolean frozen) {
         isFrozen = frozen;
     }
 
+    /**
+     *
+     * @return 1 if the card has already attacked and 0 otherwise
+     */
     public boolean hasAttacked() {
         return hasAttacked;
     }
 
-    public void setAttacked(boolean hasAttacked) {
-        this.hasAttacked = hasAttacked;
+    public void setAttacked(final boolean newHasAttacked) {
+        this.hasAttacked = newHasAttacked;
     }
 
-    public Card(CardInput card) {
+    public Card(final CardInput card) {
         this.mana = card.getMana();
         this.attackDamage = card.getAttackDamage();
         this.health = card.getHealth();
@@ -90,7 +95,7 @@ public class Card {
         this.name = card.getName();
     }
 
-    public Card(Card card) {
+    public Card(final Card card) {
         this.mana = card.mana;
         this.attackDamage = card.attackDamage;
         this.health = card.health;
@@ -108,29 +113,44 @@ public class Card {
                 || name.equals("King Mudface") || name.equals("General Kocioraw");
     }
 
-    public void reduceHealth(int value) {
+    /**
+     * Reduces card health by a given value.
+     * @param value
+     */
+    public void reduceHealth(final int value) {
         health -= value;
     }
 
-    public void reduceAttack(int value) {
+    /**
+     * Reduces card attackDamage by a given value.
+     * @param value
+     */
+    public void reduceAttack(final int value) {
         attackDamage -= value;
-        if (attackDamage < 0)
+        if (attackDamage < 0) {
             attackDamage = 0;
+        }
     }
 
+    /**
+     * Converts a card to a JSON using Jackson library.
+     * @return the card as an ObjectNode-type JSON
+     */
     public ObjectNode convertToJSON() {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
         ArrayNode arrayNode = mapper.createArrayNode();
 
         objectNode.put("mana", mana);
-        if (!this.isHero())
+        if (!this.isHero()) {
             objectNode.put("attackDamage", attackDamage);
+        }
         objectNode.put("health", health);
         objectNode.put("description", description);
 
-        for (String color : colors)
+        for (String color : colors) {
             arrayNode.add(color);
+        }
 
         objectNode.put("colors", arrayNode);
         objectNode.put("name", name);
@@ -138,28 +158,22 @@ public class Card {
         return objectNode;
     }
 
-    public void removeIfDead(Card [][] board, int x, int y) {
+    /**
+     * Removes a minion off the board if it has been killed and
+     * shifts all the minions to its right one position to the left.
+     * @param board the board where the card is
+     * @param x card row
+     * @param y card column
+     */
+    public void removeIfDead(final Card[][] board, final int x, final int y) {
         if (health <= 0) {
             board[x][y] = null;
 
-            for (int j = y; j < 4; j++)
+            for (int j = y; j < Game.BOARD_COLUMNS - 1; j++) {
                 board[x][j] = board[x][j + 1];
+            }
 
-            board[x][4] = null;
+            board[x][Game.BOARD_COLUMNS - 1] = null;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Card{" +
-                "mana=" + mana +
-                ", attackDamage=" + attackDamage +
-                ", health=" + health +
-                ", description='" + description + '\'' +
-                ", colors=" + colors +
-                ", name='" + name + '\'' +
-                ", isFrozen=" + isFrozen +
-                ", hasAttacked=" + hasAttacked +
-                '}';
     }
 }

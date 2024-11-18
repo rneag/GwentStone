@@ -12,23 +12,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-public class Match {
+public final class Match {
     private MatchInfo information;
     private ArrayList<Action> actions;
     private Player player1;
     private Player player2;
-    private Card[][] board = new Card[4][5];
+    private final Card[][] board = new Card[Game.BOARD_ROWS][Game.BOARD_COLUMNS];
     private int currentRound;
     private int activePlayer = 0;
 
-    private ArrayNode output;
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ArrayNode output;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public MatchInfo getInformation() {
         return information;
     }
 
-    public void setInformation(MatchInfo information) {
+    public void setInformation(final MatchInfo information) {
         this.information = information;
     }
 
@@ -36,7 +36,7 @@ public class Match {
         return actions;
     }
 
-    public void setActions(ArrayList<Action> actions) {
+    public void setActions(final ArrayList<Action> actions) {
         this.actions = actions;
     }
 
@@ -44,7 +44,7 @@ public class Match {
         return player1;
     }
 
-    public void setPlayer1(Player player1) {
+    public void setPlayer1(final Player player1) {
         this.player1 = player1;
     }
 
@@ -52,11 +52,12 @@ public class Match {
         return player2;
     }
 
-    public void setPlayer2(Player player2) {
+    public void setPlayer2(final Player player2) {
         this.player2 = player2;
     }
 
-    public Match(GameInput game, Decks playerOneDecks, Decks playerTwoDecks, ArrayNode output) {
+    public Match(final GameInput game, final Decks playerOneDecks, final Decks playerTwoDecks,
+                 final ArrayNode output) {
         this.output = output;
         this.information = new MatchInfo(game.getStartGame());
         this.actions = new ArrayList<Action>();
@@ -83,12 +84,12 @@ public class Match {
         this.activePlayer = information.getStartingPlayer();
 
         for (Action action : actions) {
-            execute(this, action);
+            execute(action);
         }
 
     }
 
-    void execute(Match match, Action action) {
+    void execute(final Action action) {
         ObjectNode objectNode = mapper.createObjectNode();
 
         switch (action.getCommand()) {
@@ -96,10 +97,11 @@ public class Match {
                 objectNode.put("command", action.getCommand());
                 objectNode.put("playerIdx", action.getPlayerIdx());
 
-                if (action.getPlayerIdx() == 1)
+                if (action.getPlayerIdx() == 1) {
                     objectNode.put("output", getCardsInHand(player1));
-                else
+                } else {
                     objectNode.put("output", getCardsInHand(player2));
+                }
 
                 output.add(objectNode);
                 break;
@@ -108,10 +110,11 @@ public class Match {
                 objectNode.put("command", action.getCommand());
                 objectNode.put("playerIdx", action.getPlayerIdx());
 
-                if (action.getPlayerIdx() == 1)
+                if (action.getPlayerIdx() == 1) {
                     objectNode.put("output", getPlayerDeck(player1));
-                else
+                } else {
                     objectNode.put("output", getPlayerDeck(player2));
+                }
 
                 output.add(objectNode);
                 break;
@@ -134,10 +137,11 @@ public class Match {
                 objectNode.put("command", action.getCommand());
                 objectNode.put("playerIdx", action.getPlayerIdx());
 
-                if (action.getPlayerIdx() == 1)
+                if (action.getPlayerIdx() == 1) {
                     objectNode.put("output", player1.getHero().convertToJSON());
-                else
+                } else {
                     objectNode.put("output", player2.getHero().convertToJSON());
+                }
 
                 output.add(objectNode);
                 break;
@@ -148,10 +152,11 @@ public class Match {
                 objectNode.put("y", action.getY());
 
                 Card card = board[action.getX()][action.getY()];
-                if (card == null)
+                if (card == null) {
                     objectNode.put("output", "No card available at that position.");
-                else
+                } else {
                     objectNode.put("output", card.convertToJSON());
+                }
 
                 output.add(objectNode);
                 break;
@@ -160,10 +165,11 @@ public class Match {
                 objectNode.put("command", action.getCommand());
                 objectNode.put("playerIdx", action.getPlayerIdx());
 
-                if (action.getPlayerIdx() == 1)
+                if (action.getPlayerIdx() == 1) {
                     objectNode.put("output", player1.getMana());
-                else
+                } else {
                     objectNode.put("output", player2.getMana());
+                }
 
                 output.add(objectNode);
                 break;
@@ -182,20 +188,21 @@ public class Match {
             case "placeCard":
                 int placeCardReturn;
 
-                if (activePlayer == 1)
+                if (activePlayer == 1) {
                     placeCardReturn = player1.playCard(board, action.getHandIdx(), 1);
-                else
+                } else {
                     placeCardReturn = player2.playCard(board, action.getHandIdx(), 2);
+                }
 
                 switch (placeCardReturn) {
-                    case -1:
+                    case Game.OUT_OF_MANA:
                         objectNode.put("command", action.getCommand());
                         objectNode.put("handIdx", action.getHandIdx());
                         objectNode.put("error", "Not enough mana to place card on table.");
                         output.add(objectNode);
                         break;
 
-                    case 1:
+                    case Game.NO_ROOM:
                         objectNode.put("command", action.getCommand());
                         objectNode.put("handIdx", action.getHandIdx());
                         objectNode.put("error", "Cannot place card on table since row is full.");
@@ -210,12 +217,15 @@ public class Match {
             case "cardUsesAttack":
                 int attackReturn;
 
-                if (activePlayer == 1)
-                    attackReturn = player1.attackCard(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
-                                            action.getCardAttacked().getX(), action.getCardAttacked().getY(), 1);
-                else
-                    attackReturn = player2.attackCard(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
-                            action.getCardAttacked().getX(), action.getCardAttacked().getY(), 2);
+                if (activePlayer == 1) {
+                    attackReturn = player1.attackCard(board, action.getCardAttacker().getX(),
+                            action.getCardAttacker().getY(), action.getCardAttacked().getX(),
+                            action.getCardAttacked().getY(), 1);
+                } else {
+                    attackReturn = player2.attackCard(board, action.getCardAttacker().getX(),
+                            action.getCardAttacker().getY(), action.getCardAttacked().getX(),
+                            action.getCardAttacked().getY(), 2);
+                }
 
                 if (attackReturn != 0) {
                     objectNode.put("command", action.getCommand());
@@ -232,22 +242,22 @@ public class Match {
                 }
 
                 switch (attackReturn) {
-                    case -2:
+                    case Game.NOT_ENEMY:
                         objectNode.put("error", "Attacked card does not belong to the enemy.");
                         output.add(objectNode);
                         break;
 
-                    case -1:
+                    case Game.ALREADY_ATTACKED:
                         objectNode.put("error", "Attacker card has already attacked this turn.");
                         output.add(objectNode);
                         break;
 
-                    case 1:
+                    case Game.IS_FROZEN:
                         objectNode.put("error", "Attacker card is frozen.");
                         output.add(objectNode);
                         break;
 
-                    case 2:
+                    case Game.ENEMY_HAS_TAUNT:
                         objectNode.put("error", "Attacked card is not of type 'Tank’.");
                         output.add(objectNode);
                         break;
@@ -260,12 +270,15 @@ public class Match {
             case "cardUsesAbility":
                 int cardAbilityReturn;
 
-                if (activePlayer == 1)
-                    cardAbilityReturn = player1.useCardAbility(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                if (activePlayer == 1) {
+                    cardAbilityReturn = player1.useCardAbility(board,
+                            action.getCardAttacker().getX(), action.getCardAttacker().getY(),
                             action.getCardAttacked().getX(), action.getCardAttacked().getY(), 1);
-                else
-                    cardAbilityReturn = player2.useCardAbility(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                } else {
+                    cardAbilityReturn = player2.useCardAbility(board,
+                            action.getCardAttacker().getX(), action.getCardAttacker().getY(),
                             action.getCardAttacked().getX(), action.getCardAttacked().getY(), 2);
+                }
 
                 if (cardAbilityReturn != 0) {
                     objectNode.put("command", action.getCommand());
@@ -282,27 +295,28 @@ public class Match {
                 }
 
                 switch (cardAbilityReturn) {
-                    case -3:
+                    case Game.IS_FROZEN:
                         objectNode.put("error", "Attacker card is frozen.");
                         output.add(objectNode);
                         break;
 
-                    case -2:
+                    case Game.ALREADY_ATTACKED:
                         objectNode.put("error", "Attacker card has already attacked this turn.");
                         output.add(objectNode);
                         break;
 
-                    case -1:
-                        objectNode.put("error", "Attacked card does not belong to the current player.");
+                    case Game.NOT_ALLY:
+                        objectNode.put("error",
+                                "Attacked card does not belong to the current player.");
                         output.add(objectNode);
                         break;
 
-                    case 1:
+                    case Game.NOT_ENEMY:
                         objectNode.put("error", "Attacked card does not belong to the enemy.");
                         output.add(objectNode);
                         break;
 
-                    case 2:
+                    case Game.ENEMY_HAS_TAUNT:
                         objectNode.put("error", "Attacked card is not of type 'Tank’.");
                         output.add(objectNode);
                         break;
@@ -315,12 +329,13 @@ public class Match {
             case "useAttackHero":
                 int attackHeroReturn;
 
-                if (activePlayer == 1)
-                    attackHeroReturn = player1.attackHero(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
-                            player2.getHero(), 1);
-                else
-                    attackHeroReturn = player2.attackHero(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
-                            player1.getHero(), 2);
+                if (activePlayer == 1) {
+                    attackHeroReturn = player1.attackHero(board, action.getCardAttacker().getX(),
+                            action.getCardAttacker().getY(), player2.getHero(), 1);
+                } else {
+                    attackHeroReturn = player2.attackHero(board, action.getCardAttacker().getX(),
+                            action.getCardAttacker().getY(), player1.getHero(), 2);
+                }
 
                 if (attackHeroReturn != 0) {
                     objectNode.put("command", action.getCommand());
@@ -332,17 +347,17 @@ public class Match {
                 }
 
                 switch (attackHeroReturn) {
-                    case -2:
+                    case Game.IS_FROZEN:
                         objectNode.put("error", "Attacker card is frozen.");
                         output.add(objectNode);
                         break;
 
-                    case -1:
+                    case Game.ALREADY_ATTACKED:
                         objectNode.put("error", "Attacker card has already attacked this turn.");
                         output.add(objectNode);
                         break;
 
-                    case 1:
+                    case Game.ENEMY_HAS_TAUNT:
                         objectNode.put("error", "Attacked card is not of type 'Tank'.");
                         output.add(objectNode);
                         break;
@@ -350,13 +365,13 @@ public class Match {
                     default:
                         if (activePlayer == 1) {
                             if (player2.getHero().getHealth() <= 0) {
-                                Game.playerOneWins++;
+                                Game.incrementPlayerOneWins();
                                 objectNode.put("gameEnded", "Player one killed the enemy hero.");
                                 output.add(objectNode);
                             }
                         } else {
                             if (player1.getHero().getHealth() <= 0) {
-                                Game.playerTwoWins++;
+                                Game.incrementPlayerTwoWins();
                                 objectNode.put("gameEnded", "Player two killed the enemy hero.");
                                 output.add(objectNode);
                             }
@@ -368,10 +383,11 @@ public class Match {
             case "useHeroAbility":
                 int heroAbilityReturn;
 
-                if (activePlayer == 1)
+                if (activePlayer == 1) {
                     heroAbilityReturn = player1.useHeroAbility(board, action.getAffectedRow(), 1);
-                else
+                } else {
                     heroAbilityReturn = player2.useHeroAbility(board, action.getAffectedRow(), 2);
+                }
 
                 if (heroAbilityReturn != 0) {
                     objectNode.put("command", action.getCommand());
@@ -379,23 +395,24 @@ public class Match {
                 }
 
                 switch (heroAbilityReturn) {
-                    case -2:
+                    case Game.OUT_OF_MANA:
                         objectNode.put("error", "Not enough mana to use hero's ability.");
                         output.add(objectNode);
                         break;
 
-                    case -1:
+                    case Game.ALREADY_ATTACKED:
                         objectNode.put("error", "Hero has already attacked this turn.");
                         output.add(objectNode);
                         break;
 
-                    case 1:
+                    case Game.NOT_ENEMY:
                         objectNode.put("error", "Selected row does not belong to the enemy.");
                         output.add(objectNode);
                         break;
 
-                    case 2:
-                        objectNode.put("error", "Selected row does not belong to the current player.");
+                    case Game.NOT_ALLY:
+                        objectNode.put("error",
+                                "Selected row does not belong to the current player.");
                         output.add(objectNode);
                         break;
 
@@ -406,23 +423,26 @@ public class Match {
 
             case "getTotalGamesPlayed":
                 objectNode.put("command", action.getCommand());
-                objectNode.put("output", Game.playerOneWins + Game.playerTwoWins);
+                objectNode.put("output", Game.getPlayerOneWins() + Game.getPlayerTwoWins());
 
                 output.add(objectNode);
                 break;
 
             case "getPlayerOneWins":
                 objectNode.put("command", action.getCommand());
-                objectNode.put("output", Game.playerOneWins);
+                objectNode.put("output", Game.getPlayerOneWins());
 
                 output.add(objectNode);
                 break;
 
             case "getPlayerTwoWins":
                 objectNode.put("command", action.getCommand());
-                objectNode.put("output", Game.playerTwoWins);
+                objectNode.put("output", Game.getPlayerTwoWins());
 
                 output.add(objectNode);
+                break;
+
+            default:
                 break;
         }
     }
@@ -442,48 +462,52 @@ public class Match {
         if (activePlayer == 1) {
             player1.getHero().setAttacked(false);
             startRow = 2;
-            endRow = 4;
-        }
-        else
+            endRow = Game.BOARD_ROWS;
+        } else {
             player2.getHero().setAttacked(false);
+        }
 
-        for (int i = startRow; i < endRow; i++)
-            for (int j = 0; j < 5; j++)
+        for (int i = startRow; i < endRow; i++) {
+            for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
                 if (board[i][j] != null) {
                     board[i][j].setFrozen(false);
                     board[i][j].setAttacked(false);
                 }
+            }
+        }
 
         activePlayer = activePlayer % 2 + 1;
-        if (activePlayer == information.getStartingPlayer())
+        if (activePlayer == information.getStartingPlayer()) {
             startNewRound();
+        }
     }
 
-    ArrayNode getCardsInHand(Player player) {
+    ArrayNode getCardsInHand(final Player player) {
         ArrayNode arrayNode = mapper.createArrayNode();
-        for (Card card : player.getHand())
+        for (Card card : player.getHand()) {
             arrayNode.add(card.convertToJSON());
-
+        }
         return arrayNode;
     }
 
-    ArrayNode getPlayerDeck(Player player) {
+    ArrayNode getPlayerDeck(final Player player) {
         ArrayNode arrayNode = mapper.createArrayNode();
-        for (Card card : player.getDeck())
+        for (Card card : player.getDeck()) {
             arrayNode.add(card.convertToJSON());
-
+        }
         return arrayNode;
     }
 
     ArrayNode getCardsOnTable() {
         ArrayNode arrayNode = mapper.createArrayNode();
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < Game.BOARD_ROWS; i++) {
             ArrayNode arrayNodeRow = mapper.createArrayNode();
 
-            for (int j = 0; j < 5; j++)
-                if (board[i][j] != null)
+            for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
+                if (board[i][j] != null) {
                     arrayNodeRow.add((board[i][j]).convertToJSON());
-
+                }
+            }
             arrayNode.add(arrayNodeRow);
         }
         return arrayNode;
@@ -491,10 +515,13 @@ public class Match {
 
     ArrayNode getFrozenCardsOnTable() {
         ArrayNode arrayNode = mapper.createArrayNode();
-        for (int i = 0; i < 4; i++)
-            for (int j = 0; j < 5; j++)
-                if (board[i][j] != null && board[i][j].isFrozen())
+        for (int i = 0; i < Game.BOARD_ROWS; i++) {
+            for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
+                if (board[i][j] != null && board[i][j].isFrozen()) {
                     arrayNode.add((board[i][j]).convertToJSON());
+                }
+            }
+        }
 
         return arrayNode;
     }

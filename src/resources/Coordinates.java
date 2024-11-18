@@ -1,6 +1,6 @@
 package resources;
 
-public class Coordinates {
+public final class Coordinates {
     private int x, y;
 
     public int getX() {
@@ -19,7 +19,7 @@ public class Coordinates {
         this.y = y;
     }
 
-    public Coordinates(fileio.Coordinates coordinates) {
+    public Coordinates(final fileio.Coordinates coordinates) {
         if (coordinates != null) {
             this.x = coordinates.getX();
             this.y = coordinates.getY();
