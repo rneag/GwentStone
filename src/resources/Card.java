@@ -112,6 +112,12 @@ public class Card {
         health -= value;
     }
 
+    public void reduceAttack(int value) {
+        attackDamage -= value;
+        if (attackDamage < 0)
+            attackDamage = 0;
+    }
+
     public ObjectNode convertToJSON() {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode objectNode = mapper.createObjectNode();
@@ -130,6 +136,17 @@ public class Card {
         objectNode.put("name", name);
 
         return objectNode;
+    }
+
+    public void removeIfDead(Card [][] board, int x, int y) {
+        if (health <= 0) {
+            board[x][y] = null;
+
+            for (int j = y; j < 4; j++)
+                board[x][j] = board[x][j + 1];
+
+            board[x][4] = null;
+        }
     }
 
     @Override

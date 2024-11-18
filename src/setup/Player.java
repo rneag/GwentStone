@@ -138,14 +138,69 @@ public class Player {
         cardAttacker.setAttacked(true);
         cardAttacked.reduceHealth(cardAttacker.getAttackDamage());
 
-        if (cardAttacked.getHealth() <= 0) {
-            board[attackedX][attackedY] = null;
+        cardAttacked.removeIfDead(board, attackedX, attackedY);
 
-            for (int j = attackedY; j < 4; j++)
-                board[attackedX][j] = board[attackedX][j + 1];
+        return 0;
+    }
 
-            board[attackedX][4] = null;
+    public int useCardAbility(Card [][] board, int attackerX, int attackerY, int attackedX, int attackedY, int playerIdx) {
+        Card cardAttacker = board[attackerX][attackerY];
+        Card cardAttacked = board[attackedX][attackedY];
+        int enemyRow = 2;
+        boolean enemyHasTank = false;
+
+        if (playerIdx == 1) {
+            enemyRow = 0;
         }
+
+        if (cardAttacker.isFrozen())
+            return -3;
+
+        if (cardAttacker.hasAttacked())
+            return -2;
+
+        if (cardAttacker.getName().equals("Disciple") && (attackedX == enemyRow || attackedX == enemyRow + 1))
+            return -1;
+
+        if (!cardAttacker.getName().equals("Disciple"))
+            if (attackedX != enemyRow && attackedX != enemyRow + 1)
+                return 1;
+            else {
+                for (int i = enemyRow; i < enemyRow + 2; i++)
+                    for (int j = 0; j < 5; j++) {
+                        if (board[i][j] != null && (board[i][j].isTank()))
+                            enemyHasTank = true;
+                    }
+
+                if (enemyHasTank && !cardAttacked.isTank())
+                    return 2;
+            }
+
+        switch (cardAttacker.getName()) {
+            case "Disciple":
+                cardAttacked.reduceHealth(-2);
+                break;
+
+            case "The Ripper":
+                cardAttacked.reduceAttack(2);
+                break;
+
+            case "Miraj":
+                int auxHealth = cardAttacker.getHealth();
+                cardAttacker.setHealth(cardAttacked.getHealth());
+                cardAttacked.setHealth(auxHealth);
+                break;
+
+            case "The Cursed One":
+                int aux = cardAttacked.getHealth();
+                cardAttacked.setHealth(cardAttacked.getAttackDamage());
+                cardAttacked.setAttackDamage(aux);
+                cardAttacked.removeIfDead(board, attackedX, attackedY);
+                break;
+        }
+
+        cardAttacker.setAttacked(true);
+
         return 0;
     }
 }

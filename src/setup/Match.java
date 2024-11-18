@@ -256,6 +256,61 @@ public class Match {
                         break;
                 }
                 break;
+
+            case "cardUsesAbility":
+                int cardAbilityReturn;
+
+                if (activePlayer == 1)
+                    cardAbilityReturn = player1.useCardAbility(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                            action.getCardAttacked().getX(), action.getCardAttacked().getY(), 1);
+                else
+                    cardAbilityReturn = player2.useCardAbility(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                            action.getCardAttacked().getX(), action.getCardAttacked().getY(), 2);
+
+                if (cardAbilityReturn != 0) {
+                    objectNode.put("command", action.getCommand());
+                    ObjectNode attackerNode = mapper.createObjectNode();
+                    ObjectNode attackedNode = mapper.createObjectNode();
+
+                    attackerNode.put("x", action.getCardAttacker().getX());
+                    attackerNode.put("y", action.getCardAttacker().getY());
+                    objectNode.put("cardAttacker", attackerNode);
+
+                    attackedNode.put("x", action.getCardAttacked().getX());
+                    attackedNode.put("y", action.getCardAttacked().getY());
+                    objectNode.put("cardAttacked", attackedNode);
+                }
+
+                switch (cardAbilityReturn) {
+                    case -3:
+                        objectNode.put("error", "Attacker card is frozen.");
+                        output.add(objectNode);
+                        break;
+
+                    case -2:
+                        objectNode.put("error", "Attacker card has already attacked this turn.");
+                        output.add(objectNode);
+                        break;
+
+                    case -1:
+                        objectNode.put("error", "Attacked card does not belong to the current player.");
+                        output.add(objectNode);
+                        break;
+
+                    case 1:
+                        objectNode.put("error", "Attacked card does not belong to the enemy.");
+                        output.add(objectNode);
+                        break;
+
+                    case 2:
+                        objectNode.put("error", "Attacked card is not of type 'Tank’.");
+                        output.add(objectNode);
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
         }
     }
 
