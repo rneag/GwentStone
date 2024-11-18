@@ -105,7 +105,7 @@ public class Card {
 
     public boolean isHero() {
         return name.equals("Lord Royce") || name.equals("Empress Thorina")
-                || name.equals("King Mudface") || name.equals("General Koncioraw");
+                || name.equals("King Mudface") || name.equals("General Kocioraw");
     }
 
     public void reduceHealth(int value) {

@@ -9,7 +9,6 @@ public class Player {
     private ArrayList<Card> hand;
     private Card hero;
     private int mana = 0;
-    private int wins = 0;
 
     public int getMana() {
         return mana;
@@ -17,14 +16,6 @@ public class Player {
 
     public void setMana(int mana) {
         this.mana = mana;
-    }
-
-    public int getWins() {
-        return wins;
-    }
-
-    public void setWins(int wins) {
-        this.wins = wins;
     }
 
     public ArrayList<Card> getHand() {
@@ -111,7 +102,6 @@ public class Player {
         Card cardAttacker = board[attackerX][attackerY];
         Card cardAttacked = board[attackedX][attackedY];
         int enemyRow = 2;
-        boolean enemyHasTank = false;
 
         if (playerIdx == 1) {
             enemyRow = 0;
@@ -126,13 +116,7 @@ public class Player {
         if (cardAttacker.isFrozen())
             return 1;
 
-        for (int i = enemyRow; i < enemyRow + 2; i++)
-            for (int j = 0; j < 5; j++) {
-                if (board[i][j] != null && (board[i][j].isTank()))
-                    enemyHasTank = true;
-            }
-
-        if (enemyHasTank && !cardAttacked.isTank())
+        if (enemyHasTank(board, enemyRow) && !cardAttacked.isTank())
             return 2;
 
         cardAttacker.setAttacked(true);
@@ -147,7 +131,6 @@ public class Player {
         Card cardAttacker = board[attackerX][attackerY];
         Card cardAttacked = board[attackedX][attackedY];
         int enemyRow = 2;
-        boolean enemyHasTank = false;
 
         if (playerIdx == 1) {
             enemyRow = 0;
@@ -165,16 +148,8 @@ public class Player {
         if (!cardAttacker.getName().equals("Disciple"))
             if (attackedX != enemyRow && attackedX != enemyRow + 1)
                 return 1;
-            else {
-                for (int i = enemyRow; i < enemyRow + 2; i++)
-                    for (int j = 0; j < 5; j++) {
-                        if (board[i][j] != null && (board[i][j].isTank()))
-                            enemyHasTank = true;
-                    }
-
-                if (enemyHasTank && !cardAttacked.isTank())
-                    return 2;
-            }
+            else if (enemyHasTank(board, enemyRow) && !cardAttacked.isTank())
+                return 2;
 
         switch (cardAttacker.getName()) {
             case "Disciple":
@@ -202,5 +177,98 @@ public class Player {
         cardAttacker.setAttacked(true);
 
         return 0;
+    }
+
+    public int attackHero(Card [][] board, int attackerX, int attackerY, Card enemyHero, int playerIdx) {
+        Card card = board[attackerX][attackerY];
+        int enemyRow = 2;
+
+        if (playerIdx == 1) {
+            enemyRow = 0;
+        }
+
+        if (card.isFrozen())
+            return -2;
+
+        if (card.hasAttacked())
+            return -1;
+
+        if(enemyHasTank(board, enemyRow))
+            return 1;
+
+        card.setAttacked(true);
+        enemyHero.reduceHealth(card.getAttackDamage());
+
+        return 0;
+    }
+
+    public int useHeroAbility(Card [][] board, int affectedRow, int playerIdx) {
+        int enemyRow = 2;
+
+        if (playerIdx == 1) {
+            enemyRow = 0;
+        }
+
+        if (mana < hero.getMana())
+            return -2;
+
+        if (hero.hasAttacked())
+            return -1;
+
+        if ((hero.getName().equals("Lord Royce") || hero.getName().equals("Empress Thorina"))
+            && affectedRow != enemyRow && affectedRow != enemyRow + 1)
+            return 1;
+
+        if ((hero.getName().equals("General Kocioraw") || hero.getName().equals("King Mudface"))
+            && (affectedRow == enemyRow || affectedRow == enemyRow + 1))
+            return 2;
+
+        switch (hero.getName()) {
+            case "Lord Royce":
+                for (int j = 0; j < 5; j++)
+                    if (board[affectedRow][j] != null)
+                        board[affectedRow][j].setFrozen(true);
+                break;
+
+            case "Empress Thorina":
+                int maxHealth = 0, colIdx = -1;
+
+                for (int j = 0; j < 5; j++)
+                    if (board[affectedRow][j] != null && board[affectedRow][j].getHealth() > maxHealth) {
+                        maxHealth = board[affectedRow][j].getHealth();
+                        colIdx = j;
+                    }
+
+                board[affectedRow][colIdx].setHealth(0);
+                board[affectedRow][colIdx].removeIfDead(board, affectedRow, colIdx);
+                break;
+
+            case "King Mudface":
+                for (int j = 0; j < 5; j++)
+                    if (board[affectedRow][j] != null)
+                        board[affectedRow][j].reduceHealth(-1);
+                break;
+
+            case "General Kocioraw":
+                for (int j = 0; j < 5; j++)
+                    if (board[affectedRow][j] != null)
+                        board[affectedRow][j].reduceAttack(-1);
+                break;
+        }
+
+        hero.setAttacked(true);
+        mana -= hero.getMana();
+
+        return 0;
+    }
+
+    private boolean enemyHasTank(Card [][] board, int enemyRow) {
+        for (int i = enemyRow; i < enemyRow + 2; i++)
+            for (int j = 0; j < 5; j++) {
+                if (board[i][j] != null && (board[i][j].isTank()))
+                    return true;
+            }
+
+        return false;
     }
 }

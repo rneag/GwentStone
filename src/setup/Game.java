@@ -13,6 +13,8 @@ public class Game {
     private ArrayList<Match> matches;
 
     public static final int MAX_MANA = 10;
+    public static int playerOneWins;
+    public static int playerTwoWins;
 
     public Decks getPlayerOneDecks() {
         return playerOneDecks;
@@ -48,5 +50,7 @@ public class Game {
         for (GameInput game : games) {
             this.matches.add(new Match(game, this.playerOneDecks, this.playerTwoDecks, output));
         }
+
+        Game.playerOneWins = Game.playerTwoWins = 0;
     }
 }

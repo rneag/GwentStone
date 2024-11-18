@@ -311,6 +311,119 @@ public class Match {
                         break;
                 }
                 break;
+
+            case "useAttackHero":
+                int attackHeroReturn;
+
+                if (activePlayer == 1)
+                    attackHeroReturn = player1.attackHero(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                            player2.getHero(), 1);
+                else
+                    attackHeroReturn = player2.attackHero(board, action.getCardAttacker().getX(), action.getCardAttacker().getY(),
+                            player1.getHero(), 2);
+
+                if (attackHeroReturn != 0) {
+                    objectNode.put("command", action.getCommand());
+                    ObjectNode attackerNode = mapper.createObjectNode();
+
+                    attackerNode.put("x", action.getCardAttacker().getX());
+                    attackerNode.put("y", action.getCardAttacker().getY());
+                    objectNode.put("cardAttacker", attackerNode);
+                }
+
+                switch (attackHeroReturn) {
+                    case -2:
+                        objectNode.put("error", "Attacker card is frozen.");
+                        output.add(objectNode);
+                        break;
+
+                    case -1:
+                        objectNode.put("error", "Attacker card has already attacked this turn.");
+                        output.add(objectNode);
+                        break;
+
+                    case 1:
+                        objectNode.put("error", "Attacked card is not of type 'Tank'.");
+                        output.add(objectNode);
+                        break;
+
+                    default:
+                        if (activePlayer == 1) {
+                            if (player2.getHero().getHealth() <= 0) {
+                                Game.playerOneWins++;
+                                objectNode.put("gameEnded", "Player one killed the enemy hero.");
+                                output.add(objectNode);
+                            }
+                        } else {
+                            if (player1.getHero().getHealth() <= 0) {
+                                Game.playerTwoWins++;
+                                objectNode.put("gameEnded", "Player two killed the enemy hero.");
+                                output.add(objectNode);
+                            }
+                        }
+                        break;
+                }
+                break;
+
+            case "useHeroAbility":
+                int heroAbilityReturn;
+
+                if (activePlayer == 1)
+                    heroAbilityReturn = player1.useHeroAbility(board, action.getAffectedRow(), 1);
+                else
+                    heroAbilityReturn = player2.useHeroAbility(board, action.getAffectedRow(), 2);
+
+                if (heroAbilityReturn != 0) {
+                    objectNode.put("command", action.getCommand());
+                    objectNode.put("affectedRow", action.getAffectedRow());
+                }
+
+                switch (heroAbilityReturn) {
+                    case -2:
+                        objectNode.put("error", "Not enough mana to use hero's ability.");
+                        output.add(objectNode);
+                        break;
+
+                    case -1:
+                        objectNode.put("error", "Hero has already attacked this turn.");
+                        output.add(objectNode);
+                        break;
+
+                    case 1:
+                        objectNode.put("error", "Selected row does not belong to the enemy.");
+                        output.add(objectNode);
+                        break;
+
+                    case 2:
+                        objectNode.put("error", "Selected row does not belong to the current player.");
+                        output.add(objectNode);
+                        break;
+
+                    default:
+                        break;
+                }
+                break;
+
+            case "getTotalGamesPlayed":
+                objectNode.put("command", action.getCommand());
+                objectNode.put("output", Game.playerOneWins + Game.playerTwoWins);
+
+                output.add(objectNode);
+                break;
+
+            case "getPlayerOneWins":
+                objectNode.put("command", action.getCommand());
+                objectNode.put("output", Game.playerOneWins);
+
+                output.add(objectNode);
+                break;
+
+            case "getPlayerTwoWins":
+                objectNode.put("command", action.getCommand());
+                objectNode.put("output", Game.playerTwoWins);
+
+                output.add(objectNode);
+                break;
         }
     }
 
@@ -327,9 +440,12 @@ public class Match {
         int startRow = 0, endRow = 2;
 
         if (activePlayer == 1) {
+            player1.getHero().setAttacked(false);
             startRow = 2;
             endRow = 4;
         }
+        else
+            player2.getHero().setAttacked(false);
 
         for (int i = startRow; i < endRow; i++)
             for (int j = 0; j < 5; j++)
