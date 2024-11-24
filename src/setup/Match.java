@@ -5,21 +5,19 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.ActionsInput;
 import fileio.GameInput;
-import resources.Card;
 import resources.Decks;
+import resources.minions.Minion;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Random;
 
 public final class Match {
     private MatchInfo information;
     private ArrayList<Action> actions;
     private Player player1;
     private Player player2;
-    private final Card[][] board = new Card[Game.BOARD_ROWS][Game.BOARD_COLUMNS];
+    private final Minion[][] board = new Minion[Game.BOARD_ROWS][Game.BOARD_COLUMNS];
     private int currentRound;
-    private int activePlayer = 0;
+    private int activePlayer;
 
     private final ArrayNode output;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -68,16 +66,14 @@ public final class Match {
 
         int playerOneDeckIdx = information.getPlayerOneDeckIdx();
         int playerTwoDeckIdx = information.getPlayerTwoDeckIdx();
-        ArrayList<Card> playerOneDeck = playerOneDecks.getDecks().get(playerOneDeckIdx);
-        ArrayList<Card> playerTwoDeck = playerTwoDecks.getDecks().get(playerTwoDeckIdx);
+        ArrayList<Minion> playerOneDeck = playerOneDecks.getDecks().get(playerOneDeckIdx);
+        ArrayList<Minion> playerTwoDeck = playerTwoDecks.getDecks().get(playerTwoDeckIdx);
 
         this.player1 = new Player(playerOneDeck, information.getPlayerOneHero());
         this.player2 = new Player(playerTwoDeck, information.getPlayerTwoHero());
 
-        Random random = new Random(information.getShuffleSeed());
-        Collections.shuffle(player1.getDeck(), random);
-        random = new Random(information.getShuffleSeed());
-        Collections.shuffle(player2.getDeck(), random);
+        player1.shuffleDeck(information.getShuffleSeed());
+        player2.shuffleDeck(information.getShuffleSeed());
 
         currentRound = 0;
         startNewRound();
@@ -86,7 +82,6 @@ public final class Match {
         for (Action action : actions) {
             execute(action);
         }
-
     }
 
     void execute(final Action action) {
@@ -98,9 +93,9 @@ public final class Match {
                 objectNode.put("playerIdx", action.getPlayerIdx());
 
                 if (action.getPlayerIdx() == 1) {
-                    objectNode.put("output", getCardsInHand(player1));
+                    objectNode.put("output", player1.getCardsInHand());
                 } else {
-                    objectNode.put("output", getCardsInHand(player2));
+                    objectNode.put("output", player2.getCardsInHand());
                 }
 
                 output.add(objectNode);
@@ -111,9 +106,9 @@ public final class Match {
                 objectNode.put("playerIdx", action.getPlayerIdx());
 
                 if (action.getPlayerIdx() == 1) {
-                    objectNode.put("output", getPlayerDeck(player1));
+                    objectNode.put("output", player1.getPlayerDeck());
                 } else {
-                    objectNode.put("output", getPlayerDeck(player2));
+                    objectNode.put("output", player2.getPlayerDeck());
                 }
 
                 output.add(objectNode);
@@ -151,7 +146,7 @@ public final class Match {
                 objectNode.put("x", action.getX());
                 objectNode.put("y", action.getY());
 
-                Card card = board[action.getX()][action.getY()];
+                Minion card = board[action.getX()][action.getY()];
                 if (card == null) {
                     objectNode.put("output", "No card available at that position.");
                 } else {
@@ -480,22 +475,6 @@ public final class Match {
         if (activePlayer == information.getStartingPlayer()) {
             startNewRound();
         }
-    }
-
-    ArrayNode getCardsInHand(final Player player) {
-        ArrayNode arrayNode = mapper.createArrayNode();
-        for (Card card : player.getHand()) {
-            arrayNode.add(card.convertToJSON());
-        }
-        return arrayNode;
-    }
-
-    ArrayNode getPlayerDeck(final Player player) {
-        ArrayNode arrayNode = mapper.createArrayNode();
-        for (Card card : player.getDeck()) {
-            arrayNode.add(card.convertToJSON());
-        }
-        return arrayNode;
     }
 
     ArrayNode getCardsOnTable() {

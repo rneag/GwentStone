@@ -15,20 +15,20 @@
   "playerIdx" : 1,
   "output" : {
     "mana" : 2,
-    "health" : 21,
     "description" : "Premium card: Time to show who we are, the low-class was never scared of you.",
     "colors" : [ "Brown", "Pink", "Purple" ],
-    "name" : "King Mudface"
+    "name" : "King Mudface",
+    "health" : 21
   }
 }, {
   "command" : "getPlayerHero",
   "playerIdx" : 2,
   "output" : {
     "mana" : 2,
-    "health" : 30,
     "description" : "Standard card: Absolute order, a soldier must devote his life to his General.",
     "colors" : [ "Red", "Black", "Purple" ],
-    "name" : "General Kocioraw"
+    "name" : "General Kocioraw",
+    "health" : 30
   }
 }, {
   "command" : "getCardsInHand",
@@ -65,20 +65,20 @@
   "playerIdx" : 1,
   "output" : {
     "mana" : 2,
-    "health" : 21,
     "description" : "Premium card: Time to show who we are, the low-class was never scared of you.",
     "colors" : [ "Brown", "Pink", "Purple" ],
-    "name" : "King Mudface"
+    "name" : "King Mudface",
+    "health" : 21
   }
 }, {
   "command" : "getPlayerHero",
   "playerIdx" : 2,
   "output" : {
     "mana" : 2,
-    "health" : 30,
     "description" : "Standard card: Absolute order, a soldier must devote his life to his General.",
     "colors" : [ "Red", "Black", "Purple" ],
-    "name" : "General Kocioraw"
+    "name" : "General Kocioraw",
+    "health" : 30
   }
 }, {
   "gameEnded" : "Player two killed the enemy hero."

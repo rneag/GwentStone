@@ -83,6 +83,9 @@ public final class Game {
 
     public Game(final DecksInput playerOneDecks, final DecksInput playerTwoDecks,
                 final ArrayList<GameInput> games, final ArrayNode output) {
+        playerOneWins = 0;
+        playerTwoWins = 0;
+
         this.playerOneDecks = new Decks(playerOneDecks.getNrCardsInDeck(),
                 playerOneDecks.getNrDecks(), playerOneDecks.getDecks());
         this.playerTwoDecks = new Decks(playerTwoDecks.getNrCardsInDeck(),
@@ -92,8 +95,5 @@ public final class Game {
         for (GameInput game : games) {
             this.matches.add(new Match(game, this.playerOneDecks, this.playerTwoDecks, output));
         }
-
-        playerOneWins = 0;
-        playerTwoWins = 0;
     }
 }

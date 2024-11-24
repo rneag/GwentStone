@@ -52,20 +52,20 @@
   "playerIdx" : 1,
   "output" : {
     "mana" : 3,
-    "health" : 30,
     "description" : "Standard card: Absolute order, a soldier must devote his life to his General.",
     "colors" : [ "Green", "Yellow" ],
-    "name" : "General Kocioraw"
+    "name" : "General Kocioraw",
+    "health" : 30
   }
 }, {
   "command" : "getPlayerHero",
   "playerIdx" : 2,
   "output" : {
     "mana" : 2,
-    "health" : 30,
     "description" : "Premium card: Her majesty rule is absolute, every non-believer will suffer.",
     "colors" : [ "Black", "Red" ],
-    "name" : "Empress Thorina"
+    "name" : "Empress Thorina",
+    "health" : 30
   }
 }, {
   "command" : "getCardsInHand",
@@ -121,20 +121,20 @@
   "playerIdx" : 1,
   "output" : {
     "mana" : 3,
-    "health" : 25,
     "description" : "Standard card: Absolute order, a soldier must devote his life to his General.",
     "colors" : [ "Green", "Yellow" ],
-    "name" : "General Kocioraw"
+    "name" : "General Kocioraw",
+    "health" : 25
   }
 }, {
   "command" : "getPlayerHero",
   "playerIdx" : 2,
   "output" : {
     "mana" : 2,
-    "health" : 25,
     "description" : "Premium card: Her majesty rule is absolute, every non-believer will suffer.",
     "colors" : [ "Black", "Red" ],
-    "name" : "Empress Thorina"
+    "name" : "Empress Thorina",
+    "health" : 25
   }
 }, {
   "gameEnded" : "Player two killed the enemy hero."

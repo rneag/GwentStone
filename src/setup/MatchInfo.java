@@ -1,14 +1,14 @@
 package setup;
 
 import fileio.StartGameInput;
-import resources.Card;
+import resources.Hero;
 
 public final class MatchInfo {
     private int playerOneDeckIdx;
     private int playerTwoDeckIdx;
     private int shuffleSeed;
-    private Card playerOneHero;
-    private Card playerTwoHero;
+    private Hero playerOneHero;
+    private Hero playerTwoHero;
     private int startingPlayer;
 
     public int getPlayerOneDeckIdx() {
@@ -35,19 +35,19 @@ public final class MatchInfo {
         this.shuffleSeed = shuffleSeed;
     }
 
-    public Card getPlayerOneHero() {
+    public Hero getPlayerOneHero() {
         return playerOneHero;
     }
 
-    public void setPlayerOneHero(final Card playerOneHero) {
+    public void setPlayerOneHero(final Hero playerOneHero) {
         this.playerOneHero = playerOneHero;
     }
 
-    public Card getPlayerTwoHero() {
+    public Hero getPlayerTwoHero() {
         return playerTwoHero;
     }
 
-    public void setPlayerTwoHero(final Card playerTwoHero) {
+    public void setPlayerTwoHero(final Hero playerTwoHero) {
         this.playerTwoHero = playerTwoHero;
     }
 
@@ -63,10 +63,8 @@ public final class MatchInfo {
         playerOneDeckIdx = info.getPlayerOneDeckIdx();
         playerTwoDeckIdx = info.getPlayerTwoDeckIdx();
         shuffleSeed = info.getShuffleSeed();
-        playerOneHero = new Card(info.getPlayerOneHero());
-        playerOneHero.setHealth(Game.HERO_HEALTH);
-        playerTwoHero = new Card(info.getPlayerTwoHero());
-        playerTwoHero.setHealth(Game.HERO_HEALTH);
+        playerOneHero = Hero.createHero(info.getPlayerOneHero());
+        playerTwoHero = Hero.createHero(info.getPlayerTwoHero());
         startingPlayer = info.getStartingPlayer();
     }
 }

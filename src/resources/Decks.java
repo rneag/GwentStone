@@ -1,13 +1,14 @@
 package resources;
 
 import fileio.CardInput;
+import resources.minions.Minion;
 
 import java.util.ArrayList;
 
 public final class Decks {
     private int nrCardsInDeck;
     private int nrDecks;
-    private ArrayList<ArrayList<Card>> decks;
+    private ArrayList<ArrayList<Minion>> decks;
 
     public int getNrCardsInDeck() {
         return nrCardsInDeck;
@@ -25,11 +26,11 @@ public final class Decks {
         this.nrDecks = nrDecks;
     }
 
-    public ArrayList<ArrayList<Card>> getDecks() {
+    public ArrayList<ArrayList<Minion>> getDecks() {
         return decks;
     }
 
-    public void setDecks(final ArrayList<ArrayList<Card>> decks) {
+    public void setDecks(final ArrayList<ArrayList<Minion>> decks) {
         this.decks = decks;
     }
 
@@ -37,12 +38,12 @@ public final class Decks {
                  final ArrayList<ArrayList<CardInput>> decks) {
         this.nrCardsInDeck = nrCardsInDeck;
         this.nrDecks = nrDecks;
-        this.decks = new ArrayList<ArrayList<Card>>();
+        this.decks = new ArrayList<ArrayList<Minion>>();
 
         for (int i = 0; i < decks.size(); i++) {
-            this.decks.add(new ArrayList<Card>());
+            this.decks.add(new ArrayList<Minion>());
             for (CardInput card : decks.get(i)) {
-                this.decks.get(i).add(new Card(card));
+                this.decks.get(i).add(Minion.createMinion(card));
             }
         }
     }

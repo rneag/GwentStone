@@ -1,13 +1,19 @@
 package setup;
 
-import resources.Card;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import resources.Hero;
+import resources.minions.Minion;
+import resources.minions.SpecialMinion;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 
 public final class Player {
-    private ArrayList<Card> deck;
-    private ArrayList<Card> hand;
-    private Card hero;
+    private ArrayList<Minion> deck;
+    private ArrayList<Minion> hand;
+    private Hero hero;
     private int mana = 0;
 
     public int getMana() {
@@ -18,95 +24,105 @@ public final class Player {
         this.mana = mana;
     }
 
-    public ArrayList<Card> getHand() {
+    public ArrayList<Minion> getHand() {
         return hand;
     }
 
-    public void setHand(final ArrayList<Card> hand) {
+    public void setHand(final ArrayList<Minion> hand) {
         this.hand = hand;
     }
 
-    public ArrayList<Card> getDeck() {
+    public ArrayList<Minion> getDeck() {
         return deck;
     }
 
-    public void setDeck(final ArrayList<Card> deck) {
+    public void setDeck(final ArrayList<Minion> deck) {
         this.deck = deck;
     }
 
-    public Card getHero() {
+    public Hero getHero() {
         return hero;
     }
 
-    public void setHero(final Card hero) {
+    public void setHero(final Hero hero) {
         this.hero = hero;
     }
 
     /**
      * Increases mana by a given value.
-     * @param value
+     * @param value the value to be increased with
      */
     public void increaseMana(final int value) {
         mana += Math.min(value, Game.MAX_MANA);
     }
 
-    public Player(final ArrayList<Card> deck, final Card hero) {
-        this.deck = new ArrayList<Card>();
-        for (Card card : deck) {
-            this.deck.add(new Card(card));
+    public Player(final ArrayList<Minion> deck, final Hero hero) {
+        this.deck = new ArrayList<Minion>();
+        for (Minion card : deck) {
+            this.deck.add(new Minion(card));
         }
 
-        this.hero = new Card(hero);
+        this.hero = Hero.createHero(hero);
         this.hand = new ArrayList<>();
     }
+
+    /**
+     * Shuffles the player's deck based on a shuffle seed.
+     * @param shuffleSeed the given seed
+     */
+    public void shuffleDeck(final int shuffleSeed) {
+        Random random = new Random(shuffleSeed);
+        Collections.shuffle(deck, random);
+    }
+
+    /**
+     * Adds all cards from hand to an ArrayNode to be printed as a JSON.
+     * @return the ArrayNode containing all the cards
+     */
+    public ArrayNode getCardsInHand() {
+        ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+        for (Minion card : hand) {
+            arrayNode.add(card.convertToJSON());
+        }
+        return arrayNode;
+    }
+
+    /**
+     * Adds all cards from deck to an ArrayNode to be printed as a JSON.
+     * @return the ArrayNode containing all the cards
+     */
+    public ArrayNode getPlayerDeck() {
+        ArrayNode arrayNode = new ObjectMapper().createArrayNode();
+        for (Minion card : deck) {
+            arrayNode.add(card.convertToJSON());
+        }
+        return arrayNode;
+    }
+
 
     /**
      * Adds a card to hand from the deck.
      */
     public void addCardToHand() {
         if (!deck.isEmpty()) {
-            hand.add(deck.removeFirst());
+            hand.add(Minion.createMinion(deck.removeFirst()));
         }
     }
 
     /**
-     * Plays a card from hand on the board
+     * Plays a card from hand on the board.
      * @param board the board the card is to be played on
      * @param handIdx position of the card in hand
      * @param playerIdx index of the player who places the card on board
      * @return 0 if the card could be played, OUT_OF_MANA otherwise
      */
-    public int playCard(final Card[][] board, final int handIdx, final int playerIdx) {
-        Card card = hand.get(handIdx);
+    public int playCard(final Minion[][] board, final int handIdx, final int playerIdx) {
+        Minion card = hand.get(handIdx);
         if (mana < card.getMana()) {
             return Game.OUT_OF_MANA;
         }
 
-        int frontRow = 1, backRow = 0;
-        int rowToBePlaced;
-        boolean wasPlaced = false;
-
-        if (playerIdx == 1) {
-            frontRow = Game.BOARD_ROWS - 2;
-            backRow = Game.BOARD_ROWS - 1;
-        }
-
-        if (card.getName().equals("Sentinel") || card.getName().equals("Berserker")
-            || card.getName().equals("The Cursed One") || card.getName().equals("Disciple")) {
-            rowToBePlaced = backRow;
-        } else {
-            rowToBePlaced = frontRow;
-        }
-
-        for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
-            if (board[rowToBePlaced][j] == null) {
-                board[rowToBePlaced][j] = new Card(card);
-                wasPlaced = true;
-                break;
-            }
-        }
-
-        if (!wasPlaced) {
+        if (!card.placeOnBoard(board, playerIdx)) {
             return Game.NO_ROOM;
         }
 
@@ -126,10 +142,10 @@ public final class Player {
      * @param playerIdx index of the player who attacks
      * @return 0 if there were no errors when attacking the card
      */
-    public int attackCard(final Card[][] board, final int attackerX, final int attackerY,
+    public int attackCard(final Minion[][] board, final int attackerX, final int attackerY,
                           final int attackedX, final int attackedY, final int playerIdx) {
-        Card cardAttacker = board[attackerX][attackerY];
-        Card cardAttacked = board[attackedX][attackedY];
+        Minion cardAttacker = board[attackerX][attackerY];
+        Minion cardAttacked = board[attackedX][attackedY];
         int enemyRow = 2;
 
         if (playerIdx == 1) {
@@ -152,7 +168,6 @@ public final class Player {
 
         cardAttacker.setAttacked(true);
         cardAttacked.reduceHealth(cardAttacker.getAttackDamage());
-
         cardAttacked.removeIfDead(board, attackedX, attackedY);
 
         return 0;
@@ -168,10 +183,10 @@ public final class Player {
      * @param playerIdx index of the player who attacks
      * @return 0 if there were no errors when attacking the card
      */
-    public int useCardAbility(final Card[][] board, final int attackerX, final int attackerY,
+    public int useCardAbility(final Minion[][] board, final int attackerX, final int attackerY,
                               final int attackedX, final int attackedY, final int playerIdx) {
-        Card cardAttacker = board[attackerX][attackerY];
-        Card cardAttacked = board[attackedX][attackedY];
+        SpecialMinion cardAttacker = (SpecialMinion) board[attackerX][attackerY];
+        Minion cardAttacked = board[attackedX][attackedY];
         int enemyRow = 2;
 
         if (playerIdx == 1) {
@@ -184,11 +199,11 @@ public final class Player {
         if (cardAttacker.hasAttacked()) {
             return Game.ALREADY_ATTACKED;
         }
-        if (cardAttacker.getName().equals("Disciple")
+        if (!cardAttacker.getAffectsEnemy()
                 && (attackedX == enemyRow || attackedX == enemyRow + 1)) {
             return Game.NOT_ALLY;
         }
-        if (!cardAttacker.getName().equals("Disciple")) {
+        if (cardAttacker.getAffectsEnemy()) {
             if (attackedX != enemyRow && attackedX != enemyRow + 1) {
                 return Game.NOT_ENEMY;
             } else if (enemyHasTank(board, enemyRow) && !cardAttacked.isTank()) {
@@ -196,32 +211,8 @@ public final class Player {
             }
         }
 
-        switch (cardAttacker.getName()) {
-            case "Disciple":
-                cardAttacked.reduceHealth(-Game.HERO_ABILITY);
-                break;
-
-            case "The Ripper":
-                cardAttacked.reduceAttack(Game.HERO_ABILITY);
-                break;
-
-            case "Miraj":
-                int auxHealth = cardAttacker.getHealth();
-                cardAttacker.setHealth(cardAttacked.getHealth());
-                cardAttacked.setHealth(auxHealth);
-                break;
-
-            case "The Cursed One":
-                int aux = cardAttacked.getHealth();
-                cardAttacked.setHealth(cardAttacked.getAttackDamage());
-                cardAttacked.setAttackDamage(aux);
-                cardAttacked.removeIfDead(board, attackedX, attackedY);
-                break;
-
-            default:
-                break;
-        }
-
+        cardAttacker.useSpecialAbility(cardAttacked);
+        cardAttacked.removeIfDead(board, attackedX, attackedY);
         cardAttacker.setAttacked(true);
 
         return 0;
@@ -236,9 +227,9 @@ public final class Player {
      * @param playerIdx index of the player that attacks
      * @return 0 if no errors occurred when attacking
      */
-    public int attackHero(final Card[][] board, final int attackerX, final int attackerY,
-                          final Card enemyHero, final int playerIdx) {
-        Card card = board[attackerX][attackerY];
+    public int attackHero(final Minion[][] board, final int attackerX, final int attackerY,
+                          final Hero enemyHero, final int playerIdx) {
+        Minion card = board[attackerX][attackerY];
         int enemyRow = 2;
 
         if (playerIdx == 1) {
@@ -268,7 +259,7 @@ public final class Player {
      * @param playerIdx index of the player that uses the ability
      * @return 0 if no errors occurred when using the ability
      */
-    public int useHeroAbility(final Card[][] board, final int affectedRow, final int playerIdx) {
+    public int useHeroAbility(final Minion[][] board, final int affectedRow, final int playerIdx) {
         int enemyRow = 2;
 
         if (playerIdx == 1) {
@@ -281,66 +272,21 @@ public final class Player {
         if (hero.hasAttacked()) {
             return Game.ALREADY_ATTACKED;
         }
-        if ((hero.getName().equals("Lord Royce") || hero.getName().equals("Empress Thorina"))
-            && affectedRow != enemyRow && affectedRow != enemyRow + 1) {
+        if (hero.getAffectsEnemy() && affectedRow != enemyRow && affectedRow != enemyRow + 1) {
             return Game.NOT_ENEMY;
         }
-        if ((hero.getName().equals("General Kocioraw") || hero.getName().equals("King Mudface"))
-            && (affectedRow == enemyRow || affectedRow == enemyRow + 1)) {
+        if (!hero.getAffectsEnemy() && (affectedRow == enemyRow || affectedRow == enemyRow + 1)) {
             return Game.NOT_ALLY;
         }
 
-        switch (hero.getName()) {
-            case "Lord Royce":
-                for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
-                    if (board[affectedRow][j] != null) {
-                        board[affectedRow][j].setFrozen(true);
-                    }
-                }
-                break;
-
-            case "Empress Thorina":
-                int maxHealth = 0, colIdx = -1;
-
-                for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
-                    if (board[affectedRow][j] != null
-                            && board[affectedRow][j].getHealth() > maxHealth) {
-                        maxHealth = board[affectedRow][j].getHealth();
-                        colIdx = j;
-                    }
-                }
-
-                board[affectedRow][colIdx].setHealth(0);
-                board[affectedRow][colIdx].removeIfDead(board, affectedRow, colIdx);
-                break;
-
-            case "King Mudface":
-                for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
-                    if (board[affectedRow][j] != null) {
-                        board[affectedRow][j].reduceHealth(-1);
-                    }
-                }
-                break;
-
-            case "General Kocioraw":
-                for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
-                    if (board[affectedRow][j] != null) {
-                        board[affectedRow][j].reduceAttack(-1);
-                    }
-                }
-                break;
-
-            default:
-                break;
-        }
-
+        hero.useSpecialAbility(board, affectedRow);
         hero.setAttacked(true);
         mana -= hero.getMana();
 
         return 0;
     }
 
-    private boolean enemyHasTank(final Card[][] board, final int enemyRow) {
+    private boolean enemyHasTank(final Minion[][] board, final int enemyRow) {
         for (int i = enemyRow; i < enemyRow + 2; i++) {
             for (int j = 0; j < Game.BOARD_COLUMNS; j++) {
                 if (board[i][j] != null && (board[i][j].isTank())) {
