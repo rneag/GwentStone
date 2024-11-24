@@ -3,17 +3,13 @@
   <component name="CheckStyle-IDEA" serialisationVersion="2">
     <checkstyleVersion>10.20.1</checkstyleVersion>
     <scanScope>JavaOnly</scanScope>
-    <suppressErrors>true</suppressErrors>
     <copyLibs>true</copyLibs>
     <option name="thirdPartyClasspath" />
-    <option name="activeLocationIds">
-      <option value="438bb8ab-6aa7-410f-a8cf-36c931a3fd76" />
-    </option>
+    <option name="activeLocationIds" />
     <option name="locations">
       <list>
         <ConfigurationLocation id="bundled-sun-checks" type="BUNDLED" scope="All" description="Sun Checks">(bundled)</ConfigurationLocation>
         <ConfigurationLocation id="bundled-google-checks" type="BUNDLED" scope="All" description="Google Checks">(bundled)</ConfigurationLocation>
-        <ConfigurationLocation id="438bb8ab-6aa7-410f-a8cf-36c931a3fd76" type="LOCAL_FILE" scope="All" description="Cecher prima tema">$PROJECT_DIR$/src/checker/poo_checks.xml</ConfigurationLocation>
       </list>
     </option>
   </component>
