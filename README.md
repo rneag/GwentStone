@@ -1,4 +1,4 @@
-# GwentStone
+# StoneBound
 
 ## Main Idea
 In order to implement the game, I structured the project into two main folders, which are explained in greater detail below.
@@ -20,7 +20,7 @@ I also structured the project around the Factory design pattern when creating th
   * **setup**/
     * *Action* - contains the name of the game command and its arguments
     * *Game* - the basic implementation of a game, which is made up of more matches
-    * *Match* - the execution of all commands specific to a match of GwentStone
+    * *Match* - the execution of all commands specific to a match of StoneBound
     * *MatchInfo* - the information about players' decks and heroes for each match
     * *Player* - contains the information about the player's deck, hand, hero and mana count
   * **resources**/
